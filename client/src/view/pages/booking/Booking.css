@@ -1,0 +1,71 @@
+.status-circle{
+    height: 30px;
+    width: 30px;
+    border-radius: 30px;
+    border: #667080 solid 1px;
+margin-right: 10px;
+}
+
+input:focus {
+    outline: none !important;
+  }
+
+  .input-field{
+    padding: 5px;
+    border: 1px black solid;
+    border-radius: 5px;
+    color: #000;
+font-feature-settings: 'calt' off;
+font-family: "Inter",sans-serif;
+font-size: 16px;
+font-style: normal;
+font-weight: 400;
+line-height: 22px; /* 137.5% */
+letter-spacing: -0.32px;
+width: 200px;
+display: flex;
+justify-content: space-between;
+  }
+
+  input{
+   display: flex;
+   justify-content: space-between; 
+   width: 100%;
+  }
+
+
+  .room-container{
+    border-radius: 24px;
+background: #3C4A2F;
+color: var(--White, #FFF);
+font-feature-settings: 'calt' off;
+font-family: Inter;
+font-size: 14px;
+font-style: normal;
+font-weight: 700;
+line-height: 22px; /* 157.143% */
+letter-spacing: -0.28px;
+display: flex;
+width: 120px;
+padding: 9px 24px;
+justify-content: center;
+align-items: center;
+gap: 10px;
+cursor: pointer;
+  }
+
+  .booking-title-room{
+    color: #000;
+font-family: "Inter",sans-serif;
+font-size: 20px;
+font-style: italic;
+font-weight: 700;
+line-height: 22px; /* 110% */
+letter-spacing: -0.4px;
+  }
+
+  .input-group{
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
