@@ -16,7 +16,7 @@ const dispatch=useDispatch()
         axios.get(`${process.env.REACT_APP_HOSTURL}/booking/find/${userId}`).then((res) => {
             setBookings(res.data.bookings)
         })
-    }, [])
+    }, [userId])
     const selectedRoomNumber = useSelector((state) => state.bookingStore.selectedRoomNumber)
 
     const navigate = useNavigate()

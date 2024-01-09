@@ -17,7 +17,7 @@ function Sidebar(props) {
                             </h2>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer" }}  onClick={()=>{
-                            navigate("/account")
+                            navigate("/myaccount")
                         }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="61" height="69" viewBox="0 0 61 69" fill="none">
                                 <path d="M50.8334 60.375V54.625C50.8334 51.575 49.7622 48.6499 47.8556 46.4933C45.949 44.3366 43.3631 43.125 40.6667 43.125H20.3334C17.637 43.125 15.0511 44.3366 13.1444 46.4933C11.2378 48.6499 10.1667 51.575 10.1667 54.625V60.375" stroke="#667080" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -28,7 +28,7 @@ function Sidebar(props) {
                             </h2>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer" }}  onClick={()=>{
-                            navigate("/calendar")
+                            navigate("/mycalendar")
                         }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="80" height="73" viewBox="0 0 80 73" fill="none">
                                 <path d="M63.3333 12.1667H16.6667C12.9848 12.1667 10 14.8903 10 18.25V60.8333C10 64.1931 12.9848 66.9167 16.6667 66.9167H63.3333C67.0152 66.9167 70 64.1931 70 60.8333V18.25C70 14.8903 67.0152 12.1667 63.3333 12.1667Z" stroke="#667080" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />

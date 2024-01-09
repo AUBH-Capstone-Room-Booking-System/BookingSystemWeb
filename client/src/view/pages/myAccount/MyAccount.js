@@ -1,22 +1,46 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import Sidebar from '../../components/sidebar/Sidebar';
-import { Button, Input } from '@chakra-ui/react';
+import { Button, Input, useToast } from '@chakra-ui/react';
 import "./MyAccount.css"
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 function MyAccount(props) {
 
-    const user = useSelector((state) => state.authStore.user)
+    const myId =localStorage.getItem('myId')
 
     const [firstName, setFirstName] = useState(localStorage.getItem('firstName'));
     const [lastName, setLastName] = useState(localStorage.getItem('lastName'));
     const [email, setEmail] = useState(localStorage.getItem('email'));
     const [phoneNumber, setPhoneNumber] = useState(localStorage.getItem('phoneNumber'));
-
+const toast=useToast()
+const navigate=useNavigate()
     const handleSave = () => {
+        axios.post(`${process.env.REACT_APP_HOSTURL}/user/edit/${myId}`,{
+            firstName:firstName,
+            lastName:lastName,
+            email:email,
+            phoneNumber:phoneNumber
+        }).then((res)=>{
+        localStorage.setItem('firstName',firstName);
+        localStorage.setItem('lastName',lastName);
+        localStorage.setItem('email',email);
+        localStorage.setItem('phoneNumber',phoneNumber);
+            toast({
+                title: 'Updated Profile!',
+                status: 'success',
+                duration: 9000,
+                isClosable: true,
+            })
+            navigate("/")
 
+        }).catch((e)=>{
+            console.log(e);
+        })
     }
     const handleLogout = () => {
-
+        localStorage.clear()
+        navigate("/login")
     }
 
     return (

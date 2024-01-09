@@ -6,6 +6,7 @@ import HomePage from './view/pages/homePage/HomePage';
 import Booking from './view/pages/booking/Booking';
 import MyBookings from './view/pages/mybookings/MyBookings';
 import MyAccount from './view/pages/myAccount/MyAccount';
+import MyCalendar from './view/pages/calendar/MyCalendar';
 
 function App() {
   return (
@@ -16,7 +17,8 @@ function App() {
         <Route path="/" element={<HomePage/>}/>
         <Route path="/booking" element={<Booking/>}/>
         <Route path="/mybookings" element={<MyBookings/>}/>
-        <Route path="/account" element={<MyAccount/>}/>
+        <Route path="/myaccount" element={<MyAccount/>}/>
+        <Route path="/mycalendar" element={<MyCalendar/>}/>
 
       </Routes>
     </div>

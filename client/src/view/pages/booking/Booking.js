@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Booking(props) {
     const rooms = useSelector((state) => state.bookingStore.rooms)
-    const userId = useSelector((state) => state.authStore.user.id)
+    const userId =localStorage.getItem("myId")
 
     const selectedRoomNumber = useSelector((state) => state.bookingStore.selectedRoomNumber)
     const [selectedDate, setSelectedDate] = useState(null);
