@@ -7,6 +7,9 @@ const bookingSlice = createSlice({
         selectedRoomNumber: -1
     },
     reducers: {
+        resetRooms:(state)=>{
+            state.rooms=[]
+        },
         selectRoom: (state, action) => {
 
             if (state.rooms[action.payload].selected) {
@@ -57,5 +60,5 @@ const bookingSlice = createSlice({
     }
 })
 
-export const { selectRoom, initRoom } = bookingSlice.actions;
+export const { selectRoom, initRoom ,resetRooms} = bookingSlice.actions;
 export default bookingSlice.reducer

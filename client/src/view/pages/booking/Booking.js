@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import "./Booking.css"
 import { useDispatch, useSelector } from 'react-redux';
-import { initRoom, selectRoom } from '../../../features/Booking';
-import { Button, useToast } from '@chakra-ui/react';
+import { initRoom, resetRooms, selectRoom } from '../../../features/Booking';
+import { Button, useDisclosure, useToast } from '@chakra-ui/react';
 import Sidebar from '../../components/sidebar/Sidebar';
 
 import DatePicker from 'react-datepicker';
@@ -10,26 +10,36 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import {
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogContent,
+    AlertDialogOverlay,
 
+} from '@chakra-ui/react'
 
 function Booking(props) {
     const rooms = useSelector((state) => state.bookingStore.rooms)
-    const userId =localStorage.getItem("myId")
+    const userId = localStorage.getItem("myId")
 
     const selectedRoomNumber = useSelector((state) => state.bookingStore.selectedRoomNumber)
     const [selectedDate, setSelectedDate] = useState(null);
-    const [endTime,setEndTime]=useState("");
-    const [startTime,setStartTime]=useState("");
-const [purpose,setPurpose]=useState("")
-
-    const navigate=useNavigate()
+    const [endTime, setEndTime] = useState("");
+    const [startTime, setStartTime] = useState("");
+    const [purpose, setPurpose] = useState("")
+    const navigate = useNavigate()
     const dispatch = useDispatch()
     const [page, setPage] = useState(false);
- 
+    
+    const [roomReadings, setRoomReadings] = useState()
+    const [isFavorite, setIsFavorite] = useState(false)
 
     const toast = useToast()
 
     const handleOnClick = (number) => {
+
         if (rooms[number].roomStatus === "Occupied") {
             toast({
                 title: 'Room is occupied.',
@@ -45,8 +55,36 @@ const [purpose,setPurpose]=useState("")
                 isClosable: true,
             })
         } else {
-            console.log("selected");
-            dispatch(selectRoom(number))
+            axios.post(`${process.env.REACT_APP_HOSTURL}/sensor/find`, {
+                roomNumber: number + 1
+            }).then((res) => {
+                setRoomReadings(res.data.sensorData)
+
+                axios.post(`${process.env.REACT_APP_HOSTURL}/favorite/findone`, {
+                    roomNumber: number + 1,
+                    userId: userId
+                }).then((res) => {
+                    console.log(res.data);
+                    if (res.data.favorite !== null) {
+                        setIsFavorite(true)
+                    } else {
+                        setIsFavorite(false)
+
+                    }
+                    var x=number+1
+
+                    
+                    if(selectedRoomNumber!=x){
+                       
+
+                        onOpen()
+                    }
+                    dispatch(selectRoom(number))
+
+                })
+
+            })
+
         }
     }
 
@@ -54,30 +92,70 @@ const [purpose,setPurpose]=useState("")
         const newStartTime = event.target.value;
         setStartTime(newStartTime);
         setEndTime('');
-      };
-    
-      const handleEndTimeChange = (event) => {
+    };
+
+    const handleEndTimeChange = (event) => {
         const newEndTime = event.target.value;
-    
+
         // Check if the new end time is greater than or equal to the start time
         if (newEndTime >= startTime) {
-          setEndTime(newEndTime);
-          const postData={
-            "startDate":selectedDate.toLocaleDateString('en-GB'),
-            "startTime":startTime,
-            "endTime":newEndTime
-          }
-          console.log(postData);
-          axios.post(`${process.env.REACT_APP_HOSTURL}/booking/find`,postData).then((res)=>{
-            dispatch(initRoom(res.data.rooms))
-            console.log("rooms are");
-            console.log(res.data.rooms);
-          })
+            setEndTime(newEndTime);
+            const postData = {
+                "startDate": selectedDate.toLocaleDateString('en-GB'),
+                "startTime": startTime,
+                "endTime": newEndTime
+            }
+            console.log(postData);
+            axios.post(`${process.env.REACT_APP_HOSTURL}/booking/find`, postData).then((res) => {
+                dispatch(initRoom(res.data.rooms))
+
+            })
         } else {
 
         }
-      };
+    };
 
+    const handleAddToFavorites = () => {
+        if (isFavorite) {
+            var reqData={
+                userId: userId,
+                roomNumber: selectedRoomNumber
+            }
+            console.log(reqData);
+            axios.post(`${process.env.REACT_APP_HOSTURL}/favorite/delete`, reqData).then((res) => {
+                console.log(res.data);
+                onClose()
+                setIsFavorite(false)
+                toast({
+                    title: 'Deleted room from favorites.',
+                    status: 'success',
+                    duration: 9000,
+                    isClosable: true,
+                })
+            }).catch((e)=>{
+                console.log(e);
+            })
+        } else {
+            axios.post(`${process.env.REACT_APP_HOSTURL}/favorite/add`, {
+                userId: userId,
+                roomNumber: selectedRoomNumber,
+            }).then((res) => {
+                toast({
+                    title: 'Added room to favorites.',
+                    status: 'success',
+                    duration: 9000,
+                    isClosable: true,
+                })
+                                setIsFavorite(true)
+            })
+        }
+    }
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const cancelRef = React.useRef()
+
+    useEffect(()=>{
+        dispatch(resetRooms())
+    },[])
     return (
         page ?
             !rooms[0] ? <p>loading</p> :
@@ -402,54 +480,121 @@ const [purpose,setPurpose]=useState("")
 
                             </div>
                             <div>
-                                <h2>Selected Room: {selectedRoomNumber===-1?"No Room Selected":selectedRoomNumber}</h2>
-                            <Button colorScheme='teal' size='md' style={{marginRight:20}} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
-                                
+                                <h2>Selected Room: {selectedRoomNumber === -1 ? "No Room Selected" : selectedRoomNumber}</h2>
+                                <Button colorScheme='teal' size='md' style={{ marginRight: 20 }} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
+
                                     setPage(false)
-                                
-                            }}>
-                                Back
-                            </Button>
-                            <Button colorScheme='teal' size='md' bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
-                                if (selectedRoomNumber === -1) {
-                                    toast({
-                                        title: 'You need to select a room!',
-                                        status: 'error',
-                                        duration: 9000,
-                                        isClosable: true,
-                                    })
-                                } else {
-                                    var postData={
-                                        "roomNumber":selectedRoomNumber,
-                                        "purpose":purpose,
-                                        "startTime":startTime,
-                                        "endTime":endTime,
-                                        "startDate":selectedDate.toLocaleDateString('en-GB'),
-                                        "userId":userId
-                                    }
-                                    console.log(postData);
-                                    axios.post(`${process.env.REACT_APP_HOSTURL}/booking/add`,postData).then((res)=>{
+
+                                }}>
+                                    Back
+                                </Button>
+                                <Button colorScheme='teal' size='md' bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
+                                    if (selectedRoomNumber === -1) {
                                         toast({
-                                            title: 'Booked Room!',
-                                            status: 'success',
+                                            title: 'You need to select a room!',
+                                            status: 'error',
                                             duration: 9000,
                                             isClosable: true,
                                         })
-                                    }).catch((e)=>{
-                                        console.log(e);
-                                    })
-                                    navigate("/")
-                                    
-                                }
-                            }}>
-                                Book Room
-                            </Button>
+                                    } else {
+                                        var postData = {
+                                            "roomNumber": selectedRoomNumber,
+                                            "purpose": purpose,
+                                            "startTime": startTime,
+                                            "endTime": endTime,
+                                            "startDate": selectedDate.toLocaleDateString('en-GB'),
+                                            "userId": userId
+                                        }
+                                        console.log(postData);
+                                        axios.post(`${process.env.REACT_APP_HOSTURL}/booking/add`, postData).then((res) => {
+                                            toast({
+                                                title: 'Booked Room!',
+                                                status: 'success',
+                                                duration: 9000,
+                                                isClosable: true,
+                                            })
+                                        }).catch((e) => {
+                                            console.log(e);
+                                        })
+                                        navigate("/")
+
+                                    }
+                                }}>
+                                    Book Room
+                                </Button>
                             </div>
-                          
+
                         </div>
 
 
                     </div>
+                    <AlertDialog
+                        isOpen={isOpen}
+                        leastDestructiveRef={cancelRef}
+                        onClose={onClose}
+                    >
+                        <AlertDialogOverlay>
+                            <AlertDialogContent>
+                                <AlertDialogHeader fontSize='lg' fontWeight='bold' style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <h1>
+                                        Selected Room Readings
+                                    </h1>
+                                    <svg onClick={handleAddToFavorites} className="hover-svg"
+                                        xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill={isFavorite ? "var(--main-color)" : "none"}>
+                                        <path d="M11 1L14.09 7.26L21 8.27L16 13.14L17.18 20.02L11 16.77L4.82 20.02L6 13.14L1 8.27L7.91 7.26L11 1Z" stroke="var(--main-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+
+                                </AlertDialogHeader>
+
+                                <AlertDialogBody>
+                                    <span>PIR: {roomReadings && roomReadings.motion}</span>
+                                    <br></br>
+                                    <span>Temperature: {roomReadings && roomReadings.temperature}</span>
+
+                                </AlertDialogBody>
+
+                                <AlertDialogFooter>
+                                    <Button ref={cancelRef} onClick={onClose} style={{ marginRight: 20 }}>
+                                        Close
+                                    </Button>
+                                    <Button colorScheme='teal' size='md' bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
+                                        if (selectedRoomNumber === -1) {
+                                            toast({
+                                                title: 'You need to select a room!',
+                                                status: 'error',
+                                                duration: 9000,
+                                                isClosable: true,
+                                            })
+                                        } else {
+                                            var postData = {
+                                                "roomNumber": selectedRoomNumber,
+                                                "purpose": purpose,
+                                                "startTime": startTime,
+                                                "endTime": endTime,
+                                                "startDate": selectedDate.toLocaleDateString('en-GB'),
+                                                "userId": userId
+                                            }
+                                            console.log(postData);
+                                            axios.post(`${process.env.REACT_APP_HOSTURL}/booking/add`, postData).then((res) => {
+                                                toast({
+                                                    title: 'Booked Room!',
+                                                    status: 'success',
+                                                    duration: 9000,
+                                                    isClosable: true,
+                                                })
+                                            }).catch((e) => {
+                                                console.log(e);
+                                            })
+                                            navigate("/")
+
+                                        }
+                                    }}>
+                                        Book Room
+                                    </Button>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialogOverlay>
+                    </AlertDialog>
                 </div>
 
             : <div style={{ display: "flex", width: "100%", height: "100%" }}>
@@ -469,7 +614,7 @@ const [purpose,setPurpose]=useState("")
                                     placeholderText='Choose a date'
                                     minDate={new Date()}
                                 />
-                                <img src='./assets/calendar.svg' style={{transform:"translate(-150%)"}}>
+                                <img src='./assets/calendar.svg' style={{ transform: "translate(-150%)" }}>
                                 </img>
                             </div>
                         </div>
@@ -492,14 +637,14 @@ const [purpose,setPurpose]=useState("")
                     </div>
 
 
-                    <div style={{ display: "flex", flexDirection: "column",  width: "90%" }}>
+                    <div style={{ display: "flex", flexDirection: "column", width: "90%" }}>
                         <h1 className='booking-title-room' style={{ alignSelf: "start" }}>Available Rooms:</h1>
                         <br></br>
-                        <div style={{ display: "flex", width: '100%', justifyContent: "space-around",flexWrap:"wrap",alignContent:"space-around",height:"300px" }}>
+                        <div style={{ display: "flex", width: '100%', justifyContent: "space-around", flexWrap: "wrap", alignContent: "space-around", height: "300px" }}>
                             {
-                                rooms.length===0?"Select Date First":rooms.map((e, index) => {
+                                rooms.length === 0 ? "Select Date First" : rooms.map((e, index) => {
                                     if (e.roomStatus === "Available") {
-                                        return (<div className='room-container' style={{backgroundColor:"#3C4A2F"}} onClick={()=>{
+                                        return (<div className='room-container' style={{ backgroundColor: "#3C4A2F" }} onClick={() => {
                                             toast({
                                                 title: 'Click next to select room',
                                                 status: 'info',
@@ -509,8 +654,8 @@ const [purpose,setPurpose]=useState("")
                                         }}>
                                             Room {e.roomNumber}
                                         </div>)
-                                    }else if(e.roomStatus === "Occupied"){
-                                        return (<div className='room-container' style={{backgroundColor:"#ebbb33"}} onClick={()=>{
+                                    } else if (e.roomStatus === "Occupied") {
+                                        return (<div className='room-container' style={{ backgroundColor: "#ebbb33" }} onClick={() => {
                                             toast({
                                                 title: 'Occupied Room!',
                                                 status: 'error',
@@ -520,8 +665,8 @@ const [purpose,setPurpose]=useState("")
                                         }}>
                                             Room {e.roomNumber}
                                         </div>)
-                                    }else if(e.roomStatus === "Booked"){
-                                        return (<div className='room-container' style={{backgroundColor:"#cb2642"}} onClick={()=>{
+                                    } else if (e.roomStatus === "Booked") {
+                                        return (<div className='room-container' style={{ backgroundColor: "#cb2642" }} onClick={() => {
                                             toast({
                                                 title: 'Booked Room!',
                                                 status: 'error',
@@ -542,7 +687,7 @@ const [purpose,setPurpose]=useState("")
                     <div style={{ display: "flex", width: "90%", flexDirection: "column", alignItems: "start" }}>
                         <h2>Purpose:</h2>
                         <div className='input-field' style={{ width: "100%" }}>
-                            <input type="text" placeholder='ex: Exam Preperation' value={purpose} onChange={(e)=>{
+                            <input type="text" placeholder='ex: Exam Preperation' value={purpose} onChange={(e) => {
                                 setPurpose(e.target.value)
                             }}>
                             </input>
@@ -550,36 +695,36 @@ const [purpose,setPurpose]=useState("")
                     </div>
 
                     <Button colorScheme='teal' size='md' bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
-                                if(purpose===""){
+                        if (purpose === "") {
 
-                                    return ;
-                                }
-                                if(startTime===""){
+                            return;
+                        }
+                        if (startTime === "") {
 
-                                    return ;
-                                }
+                            return;
+                        }
 
-                                if(endTime===""){
-                                    return ;
+                        if (endTime === "") {
+                            return;
 
-                                }
+                        }
 
-                                if(!selectedDate){
-                                    return ;
+                        if (!selectedDate) {
+                            return;
 
-                                }
+                        }
 
-                                console.log(startTime);
-                                console.log(endTime);
-                                console.log(selectedDate.toLocaleDateString('en-GB'));
-                                console.log(purpose);
+                        console.log(startTime);
+                        console.log(endTime);
+                        console.log(selectedDate.toLocaleDateString('en-GB'));
+                        console.log(purpose);
 
-                                
-                                setPage(true)
-                                
-                            }}>
-                                Next
-                            </Button>
+
+                        setPage(true)
+
+                    }}>
+                        Next
+                    </Button>
                 </div>
             </div>
     );

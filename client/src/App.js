@@ -7,6 +7,8 @@ import Booking from './view/pages/booking/Booking';
 import MyBookings from './view/pages/mybookings/MyBookings';
 import MyAccount from './view/pages/myAccount/MyAccount';
 import MyCalendar from './view/pages/calendar/MyCalendar';
+import Favorite from './view/pages/favorites/Favorite';
+import ForgotPassword from './view/pages/forgotpassword/ForgotPassword';
 
 function App() {
   return (
@@ -19,6 +21,9 @@ function App() {
         <Route path="/mybookings" element={<MyBookings/>}/>
         <Route path="/myaccount" element={<MyAccount/>}/>
         <Route path="/mycalendar" element={<MyCalendar/>}/>
+        <Route path="/favorites" element={<Favorite/>}/>
+        <Route path="/forget" element={<ForgotPassword/>}/>
+
 
       </Routes>
     </div>

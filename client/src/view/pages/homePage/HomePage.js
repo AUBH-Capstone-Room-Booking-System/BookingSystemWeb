@@ -1,16 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import "./HomePage.css"
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/sidebar/Sidebar';
 function HomePage(props) {
     const navigate=useNavigate()
+const userId=localStorage.getItem("myId")
+useEffect(()=>{
+    console.log(userId);
+    if(!userId){
+        navigate("/login")
+    }
+},[userId])
     return (
         <div style={{ display: "flex", width: "100%", height: "100%" }}>
                                 <Sidebar/>
 
             <div style={{ width: "85%", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-around" }}>
                 <div style={{ cursor: "pointer" }}  onClick={()=>{
-                            navigate("/favorite")
+                            navigate("/favorites")
                         }}>
 
                     <div className='circle'>

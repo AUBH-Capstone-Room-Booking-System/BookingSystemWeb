@@ -1,0 +1,17 @@
+.favorite-container{
+    display: flex;
+width: 320px;
+padding: 13px 24px;
+justify-content: center;
+align-items: center;
+gap: 10px;
+border-radius: 6px;
+background: #3C4A2F;
+color: white;
+display: flex;
+justify-content: space-between;
+font-weight: 500;
+cursor: pointer;
+margin-bottom: 20px;
+
+}

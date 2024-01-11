@@ -63,7 +63,9 @@ function LoginPage(props) {
             </Button>
           </InputRightElement>
         </InputGroup>
-        <div style={{ alignSelf: "end", cursor: "pointer" }}>
+        <div style={{ alignSelf: "end", cursor: "pointer" }} onClick={()=>{
+          navigate('/forget')
+        }}>
           <u>Forgot Password</u>
         </div>
       </div>
