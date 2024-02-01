@@ -28,6 +28,9 @@ function LoginPage(props) {
         localStorage.setItem('email',res.data.user.email);
 
         localStorage.setItem('phoneNumber',res.data.user.phoneNumber);
+          localStorage.setItem('userType',res.data.user.userType);
+
+        
 
         navigate("/")
         return ;

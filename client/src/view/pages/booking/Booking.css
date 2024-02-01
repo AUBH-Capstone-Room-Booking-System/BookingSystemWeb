@@ -75,4 +75,24 @@ letter-spacing: -0.4px;
    cursor: pointer;
   }
 
+
+  .tooltip {
+    position: relative;
+    display: inline-block;
+  }
+
+  .tooltip:hover::after {
+    content: attr(title);
+    position: absolute;
+    background: white;
+    color: #000;
+    border: 1px black solid;
+    padding: 5px; /* Increased padding for better readability */
+    border-radius: 5px;
+
+width: 200px;    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+  }
   

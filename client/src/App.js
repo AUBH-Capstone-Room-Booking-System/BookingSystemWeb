@@ -9,6 +9,11 @@ import MyAccount from './view/pages/myAccount/MyAccount';
 import MyCalendar from './view/pages/calendar/MyCalendar';
 import Favorite from './view/pages/favorites/Favorite';
 import ForgotPassword from './view/pages/forgotpassword/ForgotPassword';
+import ManageBooking from './view/pages/manageBooking/ManageBooking';
+import ManageUsers from './view/pages/manageUsers/ManageUsers';
+import ChangeUser from './view/pages/changeuser/ChangeUser';
+import AddUser from './view/pages/adduser/AddUser';
+import Notifications from './view/pages/notifications/Notifications';
 
 function App() {
   return (
@@ -23,6 +28,11 @@ function App() {
         <Route path="/mycalendar" element={<MyCalendar/>}/>
         <Route path="/favorites" element={<Favorite/>}/>
         <Route path="/forget" element={<ForgotPassword/>}/>
+        <Route path="/managebookings" element={<ManageBooking/>}/>
+        <Route path="/manageusers" element={<ManageUsers/>}/>
+        <Route path="/manageusers/:id" element={<ChangeUser/>}/>
+        <Route path="/manageusers/add" element={<AddUser/>}/>
+        <Route path="/notifications" element={<Notifications/>}/>
 
 
       </Routes>

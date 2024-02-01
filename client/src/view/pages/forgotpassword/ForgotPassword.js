@@ -5,77 +5,56 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 function ForgotPassword(props) {
-    const handleClick = () => setShow(!show)
+  const handleClick = () => setShow(!show)
 
-    const [show, setShow] = useState(false)
-const [email,setEmail]=useState();
-const [firstPassword,setFirstPassword]=useState();
-const [secondPassword,setSecondPassword]=useState();
-const toast=useToast()
-const navigate=useNavigate()
-    const handleChangePassword=()=>{
-        if(secondPassword!==firstPassword){
-            toast({
-                title: 'Passwords need to match',
-                status: 'warning',
-                duration: 9000,
-                isClosable: true,
-            })
-            return;
-        }
+  const [show, setShow] = useState(false)
+  const [email, setEmail] = useState();
 
-        axios.post(`${process.env.REACT_APP_HOSTURL}/user/reset`,{
-            email:email,
-            password:firstPassword
-        }).then((res)=>{
-                toast({
-                    title: "Password has been reset",
-                    status: 'success',
-                    duration: 9000,
-                    isClosable: true,
-                })
-            navigate("/login")
-        }).catch((e)=>{
-            toast({
-                title: "Email doesn't exist",
-                status: 'error',
-                duration: 9000,
-                isClosable: true,
-            })
+  const toast = useToast()
+  const navigate = useNavigate()
+  const handleChangePassword = () => {
+    var emailCode = email.split("@")[0]
+    axios.post(`${process.env.REACT_APP_HOSTURL}/user/findbyemail`,{
+      email:email
+    }).then((res) => {
+      var user = res.data.user;
+      axios.post(`${process.env.REACT_APP_HOSTURL}/notification/add`, {
+        content: `${user.firstName} ${user.lastName} (${emailCode}) wants to reset their password`
+      }).then((res) => {
+        toast({
+          title: "Notification sent to the admin!",
+          status: 'success',
+          duration: 9000,
+          isClosable: true,
         })
-    }
-    return (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "space-around", width: "80%" }}>
+        navigate("/login")
+      }).catch((e) => {
+
+      })
+    }).catch((e) => {
+      toast({
+        title: "Email doesn't exist",
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+      })
+    })
+
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "space-around", width: "80%" }}>
       <img src={"https://picsum.photos/500/300"}>
       </img>
-      <Input placeholder='Email...' size='md' value={email} onChange={(e)=>{
+      <Input placeholder='Email...' size='md' value={email} onChange={(e) => {
         setEmail(e.target.value)
-      }}/>
-      <Input
-            pr='4.5rem'
-            type={'password'}
-            value={firstPassword}
-            onChange={(e)=>{
-                setFirstPassword(e.target.value)
-              }}
-            placeholder="New Password..."
-          />
-        <Input
-            pr='4.5rem'
-            type={'password'}
-            value={secondPassword}
-            onChange={(e)=>{
-                setSecondPassword(e.target.value)
-              }}
-            placeholder="Repeat Password..."
-          />
-        
+      }} />
 
-      <Button colorScheme='teal' onClick={handleChangePassword}  size='md' width={"100%"} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }}>
+
+      <Button colorScheme='teal' onClick={handleChangePassword} size='md' width={"100%"} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }}>
         Reset password
       </Button>
     </div>
-    );
+  );
 }
 
 export default ForgotPassword;

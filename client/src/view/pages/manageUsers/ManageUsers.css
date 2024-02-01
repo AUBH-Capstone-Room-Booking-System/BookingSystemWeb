@@ -1,0 +1,13 @@
+.user-container{
+    display: flex;
+    border: 2px solid var(--main-color);
+    border-radius: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 10px;
+    flex-direction: row;
+    width:400px;
+    align-items: center;
+    justify-content: space-between;
+    text-align: start;
+}

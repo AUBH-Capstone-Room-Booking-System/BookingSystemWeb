@@ -1,0 +1,14 @@
+.notification-block{
+    background-color: var(--main-color);
+    border-radius: 5px;
+    margin: 10px;
+    padding: 20px;
+    width: 100%;
+    display: flex;
+}
+
+.notif-content{
+    color:white;
+    font-weight: bold;
+    text-align: start;
+}

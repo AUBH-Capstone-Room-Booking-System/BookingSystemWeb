@@ -1,48 +1,31 @@
-import React, { useEffect, useRef, useState } from 'react';
-import "./Booking.css"
-import { useDispatch, useSelector } from 'react-redux';
-import { initRoom, resetRooms, selectRoom } from '../../../features/Booking';
-import { Button, useDisclosure, useToast } from '@chakra-ui/react';
-import Sidebar from '../../components/sidebar/Sidebar';
-import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-
-import DatePicker from 'react-datepicker';
-
-import 'react-datepicker/dist/react-datepicker.css';
+import React, { useEffect, useState } from 'react';
+import "./ManageBooking.css"
 import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { initRoom, selectRoom } from '../../../features/Booking';
+import Sidebar from '../../components/sidebar/Sidebar';
+import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Button, useDisclosure, useToast } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import {
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogContent,
-    AlertDialogOverlay,
-
-} from '@chakra-ui/react'
-import RatingStars from '../../components/RatingStars/RatingStars';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-function Booking(props) {
+function ManageBooking(props) {
     const rooms = useSelector((state) => state.bookingStore.rooms)
-    const userId = localStorage.getItem("myId")
-
-    const selectedRoomNumber = useSelector((state) => state.bookingStore.selectedRoomNumber)
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [endTime, setEndTime] = useState("");
-    const [startTime, setStartTime] = useState("");
-    const [purpose, setPurpose] = useState("")
-    const navigate = useNavigate()
     const dispatch = useDispatch()
-    const [page, setPage] = useState(false);
-    
+    const [bookings, setBookings] = useState([])
+    const userId = localStorage.getItem("myId")
+    const [selectedBooking, setSelectedBooking] = useState({})
     const [roomReadings, setRoomReadings] = useState()
     const [isFavorite, setIsFavorite] = useState(false)
-
-    const toast = useToast()
-
+    useEffect(() => {
+        axios.get(`${process.env.REACT_APP_HOSTURL}/booking/admin/findall`).then((res) => {
+            console.log(res.data)
+            setBookings(res.data.bookings)
+        })
+        console.log(bookings)
+    }, [])
+    const selectedRoomNumber = useSelector((state) => state.bookingStore.selectedRoomNumber)
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const cancelRef = React.useRef()
+    const navigate = useNavigate()
     const handleOnClick = (number) => {
-
         if (rooms[number].roomStatus === "Occupied") {
             toast({
                 title: 'Room is occupied.',
@@ -90,34 +73,7 @@ function Booking(props) {
 
         }
     }
-
-    const handleStartTimeChange = (event) => {
-        const newStartTime = event.target.value;
-        setStartTime(newStartTime);
-        setEndTime('');
-    };
-
-    const handleEndTimeChange = (event) => {
-        const newEndTime = event.target.value;
-
-        // Check if the new end time is greater than or equal to the start time
-        if (newEndTime >= startTime) {
-            setEndTime(newEndTime);
-            const postData = {
-                "startDate": selectedDate.toLocaleDateString('en-GB'),
-                "startTime": startTime,
-                "endTime": newEndTime
-            }
-            console.log(postData);
-            axios.post(`${process.env.REACT_APP_HOSTURL}/booking/find`, postData).then((res) => {
-                dispatch(initRoom(res.data.rooms))
-
-            })
-        } else {
-
-        }
-    };
-
+    const toast = useToast()
     const handleAddToFavorites = () => {
         if (isFavorite) {
             var reqData={
@@ -126,15 +82,14 @@ function Booking(props) {
             }
             console.log(reqData);
             axios.post(`${process.env.REACT_APP_HOSTURL}/favorite/delete`, reqData).then((res) => {
-                console.log(res.data);
-                onClose()
-                setIsFavorite(false)
                 toast({
                     title: 'Deleted room from favorites.',
                     status: 'success',
                     duration: 9000,
                     isClosable: true,
-                })
+                });
+                                onClose()
+                setIsFavorite(false)
             }).catch((e)=>{
                 console.log(e);
             })
@@ -153,19 +108,78 @@ function Booking(props) {
             })
         }
     }
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const cancelRef = React.useRef()
+    const [pageIndex, setPageIndex] = useState(0)
 
-    useEffect(()=>{
-        dispatch(resetRooms())
-    },[])
+    const handleEditRoom = () => {
+        const postData = {
+            "startDate": selectedBooking.startDate,
+            "startTime": selectedBooking.startTime,
+            "endTime": selectedBooking.endTime
+        }
+        axios.post(`${process.env.REACT_APP_HOSTURL}/booking/find`, postData).then((res) => {
+            dispatch(initRoom(res.data.rooms))
+
+            setPageIndex(2)
+        })
+
+
+    }
+
+    const handleCancelBooking = () => {
+        axios.delete(`${process.env.REACT_APP_HOSTURL}/booking/delete/${selectedBooking.id}`).then((res) => {
+            toast({
+                title: 'Canceled Booking!',
+                status: 'success',
+                duration: 9000,
+                isClosable: true,
+            })
+            navigate("/")
+        }).catch((e) => {
+            console.log(e);
+        })
+    }
+
+    const formatDate = (e) => {
+        const dateParts = e.startDate.split('/');
+        const formattedDate = new Date(`${dateParts[1]}/${dateParts[0]}/${dateParts[2]}`);
+        return formattedDate.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
+    }
     return (
-        page ?
-            !rooms[0] ? <p>loading</p> :
-                <div style={{ display: "flex", width: "100%", height: "100%" }}>
-                    <Sidebar />
+        <div style={{ display: "flex", width: "100%", height: "100%" }}>
+            <Sidebar />
+            {
+                pageIndex === 0 ? <div style={{ width: "85%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", }}>
+                    <h1 className='mybooking-title'>My Bookings</h1>
+                    <h2 className='subtitle' style={{ marginBottom: 20 }}>Select a booking to edit:</h2>
 
-                    <div style={{ width: "85%", height: "100%", display: "flex", alignItems: "center", flexDirection: "column" }}>
+                    <div>
+                        {bookings&&
+                    bookings.length === 0 ? <p>No Bookings</p> :bookings&& bookings.map((e) => {
+                            return (<div onClick={() => {
+                                setSelectedBooking(e)
+                                setPageIndex(1)
+                            }}>
+                                <h2>{formatDate(e)}</h2>
+                                <div className='booking-card'>
+                                    {e.guest} - ({e.startTime} - {e.endTime})
+                                </div>
+                            </div>)
+                        })}
+                    </div>
+                </div> : pageIndex === 1 ?
+
+                    <div style={{ width: "85%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", }}>
+                        <h1 className='mybooking-title'>Edit Booking</h1>
+                        <h2 className='subtitle' style={{ marginBottom: 20 }}>{formatDate(selectedBooking)} {selectedBooking.purpose} ({selectedBooking.startTime} - {selectedBooking.endTime})</h2>
+
+                        <Button colorScheme='teal' onClick={handleEditRoom} size='md' marginBottom={"30px"} width={"80%"} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }}>
+                            Edit Selected Room
+                        </Button>
+                        <Button colorScheme='teal' onClick={handleCancelBooking} size='md' width={"80%"} bgColor={"#AE1515"} _hover={{ background: "#ad3d3d" }}>
+                            Cancel Booking
+                        </Button>
+                    </div>
+                    : <div style={{ width: "85%", height: "100%", display: "flex", alignItems: "center", flexDirection: "column" }}>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "start", justifyContent: "center", height: "100%", transform: "scale(75%)" }}>
                             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", marginBottom: '80px', justifyContent: "center", transform: "scale(200%)", width: "100%" }}>
                                 <div style={{ backgroundColor: rooms[0].mapColor, borderBottomLeftRadius: "25px", height: "min-content", cursor: "pointer", transform: "translate(0,18%)" }} onClick={() => {
@@ -486,7 +500,7 @@ function Booking(props) {
                                 <h2>Selected Room: {selectedRoomNumber === -1 ? "No Room Selected" : selectedRoomNumber}</h2>
                                 <Button colorScheme='teal' size='md' style={{ marginRight: 20 }} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
 
-                                    setPage(false)
+                                    setPageIndex(1)
 
                                 }}>
                                     Back
@@ -500,30 +514,21 @@ function Booking(props) {
                                             isClosable: true,
                                         })
                                     } else {
-                                        var postData = {
-                                            "roomNumber": selectedRoomNumber,
-                                            "purpose": purpose,
-                                            "startTime": startTime,
-                                            "endTime": endTime,
-                                            "startDate": selectedDate.toLocaleDateString('en-GB'),
-                                            "userId": userId
-                                        }
-                                        console.log(postData);
-                                        axios.post(`${process.env.REACT_APP_HOSTURL}/booking/add`, postData).then((res) => {
+                                        axios.post(`${process.env.REACT_APP_HOSTURL}/booking/edit/${selectedBooking.id}`, {
+                                            roomNumber: selectedRoomNumber
+                                        }).then((res) => {
                                             toast({
-                                                title: 'Booked Room!',
+                                                title: 'Edited Booking!',
                                                 status: 'success',
                                                 duration: 9000,
                                                 isClosable: true,
                                             })
-                                        }).catch((e) => {
-                                            console.log(e);
+                                            navigate("/")
                                         })
-                                        navigate("/")
 
                                     }
                                 }}>
-                                    Book Room
+                                    Save Edit
                                 </Button>
                             </div>
 
@@ -531,7 +536,9 @@ function Booking(props) {
 
 
                     </div>
-                    <AlertDialog
+            }
+
+<AlertDialog
                         isOpen={isOpen}
                         leastDestructiveRef={cancelRef}
                         onClose={onClose}
@@ -553,21 +560,6 @@ function Booking(props) {
                                     <span>PIR: {roomReadings && roomReadings.motion}</span>
                                     <br></br>
                                     <span>Temperature: {roomReadings && roomReadings.temperature}</span>
-                                    <br></br>
-                                    <span>Humidity: {roomReadings && roomReadings.humidity}</span>
-                                    <br></br>
-                                    <div style={{display:"flex",justifyContent:"space-between",width:"100%"}}>
-                                    <div style={{display:"flex",alignItems:"center"}}>
-                                        <span>Comfort:</span>
-                                        {roomReadings&&<RatingStars rating={roomReadings.comfort} size={20}/>}
-                                    </div>
-                                    <div class="tooltip" title="A room will get 5 comfort stars whenA room will get 5 comfort stars when ...">
-                                    <FontAwesomeIcon style={{fontSize: '24px' }} icon={faInfoCircle} />
-
-                                    </div>
-
-                                    </div>
-                                    
 
                                 </AlertDialogBody>
 
@@ -576,7 +568,7 @@ function Booking(props) {
                                         Close
                                     </Button>
                                     <Button colorScheme='teal' size='md' bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
-                                        if (selectedRoomNumber === -1) {
+                                         if (selectedRoomNumber === -1) {
                                             toast({
                                                 title: 'You need to select a room!',
                                                 status: 'error',
@@ -584,178 +576,28 @@ function Booking(props) {
                                                 isClosable: true,
                                             })
                                         } else {
-                                            var postData = {
-                                                "roomNumber": selectedRoomNumber,
-                                                "purpose": purpose,
-                                                "startTime": startTime,
-                                                "endTime": endTime,
-                                                "startDate": selectedDate.toLocaleDateString('en-GB'),
-                                                "userId": userId
-                                            }
-                                            console.log(postData);
-                                            axios.post(`${process.env.REACT_APP_HOSTURL}/booking/add`, postData).then((res) => {
+                                            axios.post(`${process.env.REACT_APP_HOSTURL}/booking/edit/${selectedBooking.id}`, {
+                                                roomNumber: selectedRoomNumber
+                                            }).then((res) => {
                                                 toast({
-                                                    title: 'Booked Room!',
+                                                    title: 'Edited Booking!',
                                                     status: 'success',
                                                     duration: 9000,
                                                     isClosable: true,
                                                 })
-                                            }).catch((e) => {
-                                                console.log(e);
+                                                navigate("/")
                                             })
-                                            navigate("/")
-
+    
                                         }
                                     }}>
-                                        Book Room
+                                        Save Edit
                                     </Button>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialogOverlay>
                     </AlertDialog>
-                </div>
-
-            : <div style={{ display: "flex", width: "100%", height: "100%" }}>
-                <Sidebar />
-
-                <div style={{ width: "85%", height: "100%", display: "flex", alignItems: "center", flexDirection: "column", justifyContent: "space-around" }}>
-
-                    <div style={{ display: "flex", justifyContent: "space-between", width: "90%" }}>
-                        <div className='input-group'>
-                            <h2>Date:</h2>
-                            <div className="input-field">
-                                <DatePicker
-                                    selected={selectedDate}
-                                    onChange={(date) => setSelectedDate(date)}
-                                    dateFormat="dd/MM/yyyy"
-                                    locale="en"
-                                    placeholderText='Choose a date'
-                                    minDate={new Date()}
-                                />
-                                <img src='./assets/calendar.svg' style={{ transform: "translate(-150%)" }}>
-                                </img>
-                            </div>
-                        </div>
-                        <div className='input-group'>
-                            <h2>From:</h2>
-                            <div className='input-field'>
-                                <input type="time" value={startTime} onChange={handleStartTimeChange}></input>
-
-                            </div>
-                        </div>
-                        <div className='input-group'>
-                            <h2>To:</h2>
-                            <div className='input-field'>
-                                <input type="time" value={endTime} onChange={handleEndTimeChange}></input>
-
-                            </div>
-                        </div>
-
-
-                    </div>
-
-
-                    <div style={{ display: "flex", flexDirection: "column", width: "90%" }}>
-                        <h1 className='booking-title-room' style={{ alignSelf: "start" }}>Available Rooms:</h1>
-                        <br></br>
-                        <div style={{ display: "flex", width: '100%', justifyContent: "space-around", flexWrap: "wrap", alignContent: "space-around" }}>
-                            {
-                                rooms.length === 0 ? "Select Date First" : rooms.map((e, index) => {
-                                    if (e.roomStatus === "Available") {
-                                        return (<div style={{display:"flex",flexDirection:"column",margin:2}}>
-                                            <div className='room-container' style={{ backgroundColor: "#3C4A2F" }} onClick={() => {
-                                            toast({
-                                                title: 'Click next to select room',
-                                                status: 'info',
-                                                duration: 9000,
-                                                isClosable: true,
-                                            })
-                                        }}>
-                                            <span>Room {e.roomNumber}</span>
-                                        </div>
-                                        <span style={{fontSize:12}}>Category: {e.roomSize==="s"?"Small":e.roomSize==="m"?"Medium":"Large"}</span>
-                                        <span style={{fontSize:12}}>Capacity: {e.roomCapacity}</span>
-</div>)
-                                    } else if (e.roomStatus === "Occupied") {
-                                        return (<div style={{display:"flex",flexDirection:"column",margin:2}}><div className='room-container' style={{ backgroundColor: "#ebbb33" }} onClick={() => {
-                                            toast({
-                                                title: 'Occupied Room!',
-                                                status: 'error',
-                                                duration: 9000,
-                                                isClosable: true,
-                                            })
-                                        }}>
-                                            Room {e.roomNumber}
-                                        </div>
-                                        <span style={{fontSize:12}}>Category: {e.roomSize==="s"?"Small":e.roomSize==="m"?"Medium":"Large"}</span>
-                                        <span style={{fontSize:12}}>Capacity: {e.roomCapacity}</span>
-</div>                                                                                    )
-                                    } else if (e.roomStatus === "Booked") {
-                                        return (<div style={{display:"flex",flexDirection:"column",margin:2}}> <div className='room-container' style={{ backgroundColor: "#cb2642" }} onClick={() => {
-                                            toast({
-                                                title: 'Booked Room!',
-                                                status: 'error',
-                                                duration: 9000,
-                                                isClosable: true,
-                                            })
-                                        }}>
-                                            Room {e.roomNumber}
-                                        </div>
-                                        <span style={{fontSize:12}}>Category: {e.roomSize==="s"?"Small":e.roomSize==="m"?"Medium":"Large"}</span>
-                                        <span style={{fontSize:12}}>Capacity: {e.roomCapacity}</span>
-</div>                                                                                    )
-                                    }
-
-
-                                })
-                            }
-                        </div>
-                    </div>
-
-                    <div style={{ display: "flex", width: "90%", flexDirection: "column", alignItems: "start" }}>
-                        <h2>Purpose:</h2>
-                        <div className='input-field' style={{ width: "100%" }}>
-                            <input type="text" placeholder='ex: Exam Preperation' value={purpose} onChange={(e) => {
-                                setPurpose(e.target.value)
-                            }}>
-                            </input>
-                        </div>
-                    </div>
-
-                    <Button colorScheme='teal' size='md' bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
-                        if (purpose === "") {
-
-                            return;
-                        }
-                        if (startTime === "") {
-
-                            return;
-                        }
-
-                        if (endTime === "") {
-                            return;
-
-                        }
-
-                        if (!selectedDate) {
-                            return;
-
-                        }
-
-                        console.log(startTime);
-                        console.log(endTime);
-                        console.log(selectedDate.toLocaleDateString('en-GB'));
-                        console.log(purpose);
-
-
-                        setPage(true)
-
-                    }}>
-                        Next
-                    </Button>
-                </div>
-            </div>
+    </div>
     );
 }
 
-export default Booking;
+export default ManageBooking;

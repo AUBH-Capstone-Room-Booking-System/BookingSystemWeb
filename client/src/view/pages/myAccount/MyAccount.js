@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Sidebar from '../../components/sidebar/Sidebar';
 import { Button, Input, useToast } from '@chakra-ui/react';
 import "./MyAccount.css"
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../../../features/Auth';
 function MyAccount(props) {
 
     const myId =localStorage.getItem('myId')
@@ -15,6 +16,7 @@ function MyAccount(props) {
     const [phoneNumber, setPhoneNumber] = useState(localStorage.getItem('phoneNumber'));
 const toast=useToast()
 const navigate=useNavigate()
+const dispatch=useDispatch();
     const handleSave = () => {
         axios.post(`${process.env.REACT_APP_HOSTURL}/user/edit/${myId}`,{
             firstName:firstName,
@@ -40,6 +42,7 @@ const navigate=useNavigate()
     }
     const handleLogout = () => {
         localStorage.clear()
+        dispatch(logout());
         navigate("/login")
     }
 
