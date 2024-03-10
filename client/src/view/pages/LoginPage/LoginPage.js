@@ -49,7 +49,7 @@ function LoginPage(props) {
   }
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "space-around", width: "80%" }}>
-      <img src={"https://picsum.photos/500/300"}>
+      <img src={"./logo.png"}>
       </img>
       <Input placeholder='Email...' size='md' ref={emailRef} />
       <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
@@ -73,7 +73,7 @@ function LoginPage(props) {
         </div>
       </div>
 
-      <Button colorScheme='teal' onClick={handleLogin} size='md' width={"100%"} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }}>
+      <Button colorScheme='teal' onClick={handleLogin} size='md' width={"100%"} bgColor={"var(--second-color)"} _hover={{ background: "var(--second-hover)" }}>
         Login
       </Button>
     </div>

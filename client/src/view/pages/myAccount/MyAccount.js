@@ -78,10 +78,10 @@ const dispatch=useDispatch();
 
                 </div>
                 <div style={{ display: "flex" }}>
-                    <Button colorScheme='teal' onClick={handleSave} size='md' marginRight={"30px"} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }}>
+                    <Button colorScheme='teal' onClick={handleSave} size='md' marginRight={"30px"} bgColor={"var(--second-color)"} _hover={{ background: "var(--second-hover)" }}>
                         Save Edits
                     </Button>
-                    <Button colorScheme='teal' onClick={handleLogout} size='md' marginBottom={"30px"} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }}>
+                    <Button colorScheme='teal' onClick={handleLogout} size='md' marginBottom={"30px"} bgColor={"var(--second-color)"} _hover={{ background: "var(--second-hover)" }}>
                         Logout
                     </Button>
                 </div>

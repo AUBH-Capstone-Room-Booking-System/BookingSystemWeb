@@ -1,5 +1,5 @@
 .category-title{
-    color:#667080;
+    color:var(--main-color);
 text-align: center;
 font-family: "Inter",sans-serif;
 font-size: 24px;

@@ -484,14 +484,14 @@ function Booking(props) {
                             </div>
                             <div>
                                 <h2>Selected Room: {selectedRoomNumber === -1 ? "No Room Selected" : selectedRoomNumber}</h2>
-                                <Button colorScheme='teal' size='md' style={{ marginRight: 20 }} bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
+                                <Button colorScheme='teal' size='md' style={{ marginRight: 20 }} bgColor={"var(--second-color)"} _hover={{ background: "var(--second-hover)" }} onClick={() => {
 
                                     setPage(false)
 
                                 }}>
                                     Back
                                 </Button>
-                                <Button colorScheme='teal' size='md' bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
+                                <Button colorScheme='teal' size='md' bgColor={"var(--second-color)"} _hover={{ background: "var(--second-hover)" }} onClick={() => {
                                     if (selectedRoomNumber === -1) {
                                         toast({
                                             title: 'You need to select a room!',
@@ -575,7 +575,7 @@ function Booking(props) {
                                     <Button ref={cancelRef} onClick={onClose} style={{ marginRight: 20 }}>
                                         Close
                                     </Button>
-                                    <Button colorScheme='teal' size='md' bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
+                                    <Button colorScheme='teal' size='md' bgColor={"var(--second-color)"} _hover={{ background: "var(--second-hover)" }} onClick={() => {
                                         if (selectedRoomNumber === -1) {
                                             toast({
                                                 title: 'You need to select a room!',
@@ -663,7 +663,7 @@ function Booking(props) {
                                 rooms.length === 0 ? "Select Date First" : rooms.map((e, index) => {
                                     if (e.roomStatus === "Available") {
                                         return (<div style={{display:"flex",flexDirection:"column",margin:2}}>
-                                            <div className='room-container' style={{ backgroundColor: "#3C4A2F" }} onClick={() => {
+                                            <div className='room-container' style={{ backgroundColor: 'var(--main-color)' }} onClick={() => {
                                             toast({
                                                 title: 'Click next to select room',
                                                 status: 'info',
@@ -722,7 +722,7 @@ function Booking(props) {
                         </div>
                     </div>
 
-                    <Button colorScheme='teal' size='md' bgColor={"var(--main-color)"} _hover={{ background: "var(--hover-color)" }} onClick={() => {
+                    <Button colorScheme='teal' size='md' bgColor={"var(--second-color)"} _hover={{ background: "var(--second-hover)" }} onClick={() => {
                         if (purpose === "") {
 
                             return;
@@ -742,10 +742,6 @@ function Booking(props) {
 
                         }
 
-                        console.log(startTime);
-                        console.log(endTime);
-                        console.log(selectedDate.toLocaleDateString('en-GB'));
-                        console.log(purpose);
 
 
                         setPage(true)

@@ -4,7 +4,7 @@
     height: 200px;
     width: 200px;
     border-radius: 200px;
-    background-color: #D9D9D9;
+    background-color: var(--second-color);
     margin-bottom: 10px;
     display: flex;
     flex-direction: column;

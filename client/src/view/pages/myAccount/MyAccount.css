@@ -3,6 +3,7 @@
 font-family: "Inter",sans-serif;
 font-size: 36px;
 font-style: italic;
+color: var(--main-color);
 font-weight: 700;
 line-height: 22px; /* 61.111% */
 letter-spacing: -0.72px;
